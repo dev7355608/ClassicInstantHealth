@@ -1,0 +1,12 @@
+## Interface: 11303
+## Title: ClassicInstantHealth
+## Notes: More frequent health updates in the Blizzard unit/raid frames and nameplates
+## Version: @project-version@
+## Author: dev7355608
+## X-Curse-Project-ID: 358014
+
+libs\LibStub\LibStub.lua
+libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+libs\LibInstantHealth-1.0\LibInstantHealth-1.0.xml
+
+ClassicInstantHealth.xml

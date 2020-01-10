@@ -1,0 +1,17 @@
+package-as: ClassicInstantHealth
+
+enable-nolib-creation: no
+
+externals:
+    libs/LibStub:
+        url: svn://svn.wowace.com/wow/libstub/mainline/trunk
+        tag: latest
+    libs/CallbackHandler-1.0:
+        url: svn://svn.wowace.com/wow/callbackhandler/mainline/trunk/CallbackHandler-1.0
+        tag: latest
+    libs/LibInstantHealth-1.0:
+        url: https://github.com/dev7355608/LibInstantHealth-1.0
+        tag: v1
+
+ignore:
+    - README.md
