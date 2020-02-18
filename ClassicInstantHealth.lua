@@ -2,9 +2,69 @@ local InstantHealth = LibStub("LibInstantHealth-1.0")
 
 local UnitGUID = UnitGUID
 local UnitIsConnected = UnitIsConnected
+local GetTime = GetTime
+local pairs = pairs
+local wipe = wipe
 
 local UnitHealth = InstantHealth.UnitHealth
 local UnitHealthMax = InstantHealth.UnitHealthMax
+
+local deferredCompactUnitFrames = {}
+local deferredUnitFrameHealthBars = {}
+local lastFrameTime = -1
+
+local function CompactUnitFrame_OnHealthUpdate(frame, event, unit)
+    if unit ~= frame.unit and unit ~= frame.displayedUnit then
+        return
+    end
+
+    if GetTime() > lastFrameTime then
+        deferredCompactUnitFrames[frame] = deferredCompactUnitFrames[frame] or event == "UNIT_MAXHEALTH"
+    else
+        if event == "UNIT_MAXHEALTH" then
+            CompactUnitFrame_UpdateMaxHealth(frame)
+        end
+
+        CompactUnitFrame_UpdateHealth(frame)
+        CompactUnitFrame_UpdateStatusText(frame)
+    end
+end
+
+local function UnitFrameHealthBar_OnHealthUpdate(statusbar, event, unit)
+    if unit ~= statusbar.unit then
+        return
+    end
+
+    if GetTime() > lastFrameTime then
+        deferredUnitFrameHealthBars[statusbar] = true
+    else
+        UnitFrameHealthBar_Update(statusbar, unit)
+    end
+end
+
+local deferFrame = CreateFrame("Frame")
+deferFrame:SetScript(
+    "OnUpdate",
+    function(self, elapsed)
+        for frame, updateMaxHealth in pairs(deferredCompactUnitFrames) do
+            if updateMaxHealth then
+                CompactUnitFrame_UpdateMaxHealth(frame)
+            end
+
+            CompactUnitFrame_UpdateHealth(frame)
+            CompactUnitFrame_UpdateStatusText(frame)
+        end
+
+        for statusbar in pairs(deferredUnitFrameHealthBars) do
+            UnitFrameHealthBar_Update(statusbar, statusbar.unit)
+        end
+
+        wipe(deferredCompactUnitFrames)
+        wipe(deferredUnitFrameHealthBars)
+
+        lastFrameTime = GetTime()
+    end
+)
 
 hooksecurefunc(
     "CompactUnitFrame_UpdateUnitEvents",
@@ -22,9 +82,9 @@ hooksecurefunc(
             InstantHealth.UnregisterCallback(frame, "UNIT_HEALTH")
             InstantHealth.UnregisterCallback(frame, "UNIT_HEALTH_FREQUENT")
         else
-            InstantHealth.RegisterCallback(frame, "UNIT_MAXHEALTH", CompactUnitFrame_OnEvent, frame)
-            InstantHealth.RegisterCallback(frame, "UNIT_HEALTH", CompactUnitFrame_OnEvent, frame)
-            InstantHealth.RegisterCallback(frame, "UNIT_HEALTH_FREQUENT", CompactUnitFrame_OnEvent, frame)
+            InstantHealth.RegisterCallback(frame, "UNIT_MAXHEALTH", CompactUnitFrame_OnHealthUpdate, frame)
+            InstantHealth.RegisterCallback(frame, "UNIT_HEALTH", CompactUnitFrame_OnHealthUpdate, frame)
+            InstantHealth.RegisterCallback(frame, "UNIT_HEALTH_FREQUENT", CompactUnitFrame_OnHealthUpdate, frame)
         end
     end
 )
@@ -163,9 +223,9 @@ local function UnitFrameHealthBar_UpdateHealthEvents(healthbar)
         if GetCVarBool("predictedHealth") and healthbar.frequentUpdates then
             healthbar:SetScript("OnUpdate", UnitFrameHealthBar_OnUpdate)
         else
-            InstantHealth.RegisterCallback(healthbar, "UNIT_MAXHEALTH", UnitFrameHealthBar_OnEvent, healthbar)
-            InstantHealth.RegisterCallback(healthbar, "UNIT_HEALTH", UnitFrameHealthBar_OnEvent, healthbar)
-            InstantHealth.RegisterCallback(healthbar, "UNIT_HEALTH_FREQUENT", UnitFrameHealthBar_OnEvent, healthbar)
+            InstantHealth.RegisterCallback(healthbar, "UNIT_MAXHEALTH", UnitFrameHealthBar_OnHealthUpdate, healthbar)
+            InstantHealth.RegisterCallback(healthbar, "UNIT_HEALTH", UnitFrameHealthBar_OnHealthUpdate, healthbar)
+            InstantHealth.RegisterCallback(healthbar, "UNIT_HEALTH_FREQUENT", UnitFrameHealthBar_OnHealthUpdate, healthbar)
         end
     end
 end
