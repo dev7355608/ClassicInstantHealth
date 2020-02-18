@@ -226,6 +226,7 @@ local function UnitFrameHealthBar_UpdateHealthEvents(healthbar)
 
         if GetCVarBool("predictedHealth") and healthbar.frequentUpdates then
             healthbar:SetScript("OnUpdate", UnitFrameHealthBar_OnUpdate)
+            InstantHealth.RegisterCallback(healthbar, "UNIT_MAXHEALTH", UnitFrameHealthBar_OnEvent, healthbar)
         else
             InstantHealth.RegisterCallback(healthbar, "UNIT_MAXHEALTH", UnitFrameHealthBar_OnHealthUpdate, healthbar)
             InstantHealth.RegisterCallback(healthbar, "UNIT_HEALTH", UnitFrameHealthBar_OnHealthUpdate, healthbar)
