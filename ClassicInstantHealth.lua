@@ -47,16 +47,20 @@ deferFrame:SetScript(
     "OnUpdate",
     function(self, elapsed)
         for frame, updateMaxHealth in pairs(deferredCompactUnitFrames) do
-            if updateMaxHealth then
-                CompactUnitFrame_UpdateMaxHealth(frame)
-            end
+            if frame.unit then
+                if updateMaxHealth then
+                    CompactUnitFrame_UpdateMaxHealth(frame)
+                end
 
-            CompactUnitFrame_UpdateHealth(frame)
-            CompactUnitFrame_UpdateStatusText(frame)
+                CompactUnitFrame_UpdateHealth(frame)
+                CompactUnitFrame_UpdateStatusText(frame)
+            end
         end
 
         for statusbar in pairs(deferredUnitFrameHealthBars) do
-            UnitFrameHealthBar_Update(statusbar, statusbar.unit)
+            if statusbar.unit then
+                UnitFrameHealthBar_Update(statusbar, statusbar.unit)
+            end
         end
 
         wipe(deferredCompactUnitFrames)
