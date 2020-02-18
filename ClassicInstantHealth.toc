@@ -4,6 +4,7 @@
 ## Version: @project-version@
 ## Author: dev7355608
 ## X-Curse-Project-ID: 358014
+## X-WoWI-ID: 25509
 
 libs\LibStub\LibStub.lua
 libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
