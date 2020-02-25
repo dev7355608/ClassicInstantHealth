@@ -274,21 +274,11 @@ hooksecurefunc(
                 statusbar.AnimatedLossBar:UpdateHealthMinMax()
             end
 
-            statusbar.disconnected = not UnitIsConnected(unit)
-
             if statusbar.disconnected then
-                if not statusbar.lockColor then
-                    statusbar:SetStatusBarColor(0.5, 0.5, 0.5)
-                end
-
                 statusbar:SetValue(maxValue)
                 statusbar._CIH_currValue = maxValue
             else
                 local currValue = UnitHealth(unit)
-
-                if not statusbar.lockColor then
-                    statusbar:SetStatusBarColor(0.0, 1.0, 0.0)
-                end
 
                 statusbar:SetValue(currValue)
                 statusbar._CIH_currValue = currValue
