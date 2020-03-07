@@ -11,7 +11,7 @@ externals:
         tag: latest
     libs/LibInstantHealth-1.0:
         url: https://github.com/dev7355608/LibInstantHealth-1.0
-        tag: v2
+        tag: v3
 
 ignore:
     - README.md
