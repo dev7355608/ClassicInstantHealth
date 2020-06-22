@@ -13,6 +13,9 @@ local deferredCompactUnitFrames = {}
 local deferredUnitFrameHealthBars = {}
 local lastFrameTime = -1
 
+local weaktable = {__mode = "k"}
+local currValues = setmetatable({}, weaktable)
+
 local function CompactUnitFrame_OnHealthUpdate(frame, event, unit)
     if unit ~= frame.unit and unit ~= frame.displayedUnit then
         return
@@ -276,12 +279,14 @@ hooksecurefunc(
 
             if statusbar.disconnected then
                 statusbar:SetValue(maxValue)
-                statusbar._CIH_currValue = maxValue
+                currValues[statusbar] = maxValue
+                statusbar.currValue = maxValue
             else
                 local currValue = UnitHealth(unit)
 
                 statusbar:SetValue(currValue)
-                statusbar._CIH_currValue = currValue
+                currValues[statusbar] = currValue
+                statusbar.currValue = currValue
             end
         end
 
@@ -296,14 +301,15 @@ hooksecurefunc(
             local currValue = UnitHealth(self.unit)
             local animatedLossBar = self.AnimatedLossBar
 
-            if currValue ~= self._CIH_currValue then
+            if currValue ~= currValues[self] then
                 if not self.ignoreNoUnit or UnitGUID(self.unit) then
                     if animatedLossBar then
-                        animatedLossBar:UpdateHealth(currValue, self._CIH_currValue)
+                        animatedLossBar:UpdateHealth(currValue, currValues[self])
                     end
 
                     self:SetValue(currValue)
-                    self._CIH_currValue = currValue
+                    currValues[self] = currValue
+                    self.currValue = currValue
 
                     TextStatusBar_UpdateTextString(self)
                 end
