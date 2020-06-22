@@ -2,6 +2,7 @@ local InstantHealth = LibStub("LibInstantHealth-1.0")
 
 local UnitGUID = UnitGUID
 local UnitIsConnected = UnitIsConnected
+local UnitIsDeadOrGhost = UnitIsDeadOrGhost
 local GetTime = GetTime
 local pairs = pairs
 local wipe = wipe
@@ -15,6 +16,8 @@ local lastFrameTime = -1
 
 local weaktable = {__mode = "k"}
 local currValues = setmetatable({}, weaktable)
+
+local LOST_HEALTH = LOST_HEALTH
 
 local function CompactUnitFrame_OnHealthUpdate(frame, event, unit)
     if unit ~= frame.unit and unit ~= frame.displayedUnit then
@@ -155,52 +158,49 @@ hooksecurefunc(
 hooksecurefunc(
     "CompactUnitFrame_UpdateStatusText",
     function(frame)
-        if frame:IsForbidden() then
+        local statusText = frame.statusText
+
+        if not statusText then
             return
         end
 
-        if not frame.statusText then
+        local optionTable = frame.optionTable
+
+        if not optionTable.displayStatusText then
             return
         end
 
-        if not frame.optionTable.displayStatusText then
-            frame.statusText:Hide()
+        local unit = frame.unit
+
+        if not UnitIsConnected(unit) then
             return
         end
 
-        local healthText = false
+        local displayedUnit = frame.displayedUnit
 
-        if frame:IsShown() then
-            local text = frame.statusText:GetText()
-
-            if text and text:find("%d") then
-                healthText = true
-            end
-        else
-            healthText = true
+        if UnitIsDeadOrGhost(displayedUnit) then
+            return
         end
 
-        if healthText then
-            local displayedUnit = frame.displayedUnit
+        local healthText = optionTable.healthText
 
-            if frame.optionTable.healthText == "health" then
-                frame.statusText:SetText(UnitHealth(displayedUnit))
-                frame.statusText:Show()
-            elseif frame.optionTable.healthText == "losthealth" then
-                local healthLost = UnitHealthMax(displayedUnit) - UnitHealth(displayedUnit)
+        if healthText == "health" then
+            statusText:SetText(UnitHealth(displayedUnit))
+        elseif healthText == "losthealth" then
+            local healthLost = UnitHealthMax(displayedUnit) - UnitHealth(displayedUnit)
 
-                if healthLost > 0 then
-                    frame.statusText:SetFormattedText(LOST_HEALTH, healthLost)
-                    frame.statusText:Show()
-                else
-                    frame.statusText:Hide()
-                end
-            elseif frame.optionTable.healthText == "perc" and UnitHealthMax(displayedUnit) > 0 then
-                local perc = math.ceil(100 * (UnitHealth(displayedUnit) / UnitHealthMax(displayedUnit)))
-                frame.statusText:SetFormattedText("%d%%", perc)
-                frame.statusText:Show()
+            if healthLost > 0 then
+                statusText:SetFormattedText(LOST_HEALTH, healthLost)
+                statusText:Show()
             else
-                frame.statusText:Hide()
+                statusText:Hide()
+            end
+        elseif healthText == "perc" then
+            if UnitHealthMax(displayedUnit) > 0 then
+                local perc = math.ceil(100 * (UnitHealth(displayedUnit) / UnitHealthMax(displayedUnit)))
+                statusText:SetFormattedText("%d%%", perc)
+            else
+                statusText:Hide()
             end
         end
     end
