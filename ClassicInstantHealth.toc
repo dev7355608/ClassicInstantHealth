@@ -1,4 +1,4 @@
-## Interface: 11304
+## Interface: 11305
 ## Title: ClassicInstantHealth
 ## Notes: More frequent health updates in the Blizzard unit/raid frames and nameplates
 ## Version: @project-version@
